@@ -2,6 +2,7 @@ const express = require('express')
 const { sequelize, User, Post } = require('./models');
 const post = require('./models/post');
 const authrouter = require('./routes/auth/auth')
+const authpost = require('./routes/auth/post')
 
 var bodyParser = require('body-parser').json();
 const app = express()
@@ -9,6 +10,7 @@ app.use(express.json())
 
 
 app.use("/api/auth", authrouter)
+app.use("/api/test", authpost)
 app.post('/users', bodyParser, async (req, res) => {
     const { username, password } = req.body
     try {

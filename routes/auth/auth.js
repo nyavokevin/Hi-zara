@@ -20,15 +20,33 @@ router.post('/register', bodyParser, async (req, res) => {
         const token = jwt.sign(
             { user_uuid: userTemp.uuid }, process.env.TOKEN_KEY, { expiresIn: "15m" }
         )
-        res.cookie('token', token, {
-            maxAge: 900,
-            httpOnly: true,
-            secure: true
+
+        return res.send({
+            token: token,
+            user: userTemp
         })
-        return res.json(userTemp)
     } catch (err) {
         console.log(err)
         return res.status(500).json(err)
+    }
+})
+
+router.post('/login', bodyParser, async (req, res) => {
+    const { username, password } = req.body
+    try {
+        const user = await User.findOne({
+            where: { username: username }
+        })
+        if (!user) return res.status(400).send("invalid username or password")
+
+        const validPassword = await bcrypt.compare(password, user.password)
+        if (!validPassword) return res.status(400).send("invalid username or password")
+
+        const token = jwt.sign({ user_uuid: user.uuid }, process.env.TOKEN_KEY, { expiresIn: "15m" });
+        res.send({ token: token, expiresIn: "15m", user: user });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json(error)
     }
 })
 
